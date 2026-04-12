@@ -3,7 +3,7 @@
  * Real-time trend detection and opportunity matching for social media content
  */
 
-import { SocialChannel, ContentFormat, ContentGoal, CreateBriefParams } from "../types.ts";
+import { SocialChannel, ContentFormat, ContentGoal, CreateBriefParams } from "../types.js";
 
 // ============================================
 // Trend Types
@@ -255,7 +255,7 @@ export class TrendDetectorService {
    */
   private generateSuggestedBrief(
     trend: Trend,
-    brief: { id: string; topic: string; channel: SocialChannel }
+    brief: { id: string; topic: string; channel: SocialChannel; tags: string[] }
   ): Partial<CreateBriefParams> {
     return {
       title: `${trend.tag.replace("#", "")} - ${brief.topic}`,
