@@ -97,6 +97,18 @@ const GOAL_METRIC_WEIGHTS: Record<ContentGoal, Record<string, number>> = {
 };
 
 // ============================================
+// Helpers
+// ============================================
+
+function arrayIncludes<T>(arr: T[], val: T): boolean {
+  return arr.indexOf(val) !== -1;
+}
+
+function stringIncludes(haystack: string, needle: string): boolean {
+  return haystack.indexOf(needle) !== -1;
+}
+
+// ============================================
 // Performance Predictor Service
 // ============================================
 
@@ -179,39 +191,41 @@ export class PerformancePredictorService {
   scoreAudienceFit(params: ScoreAudienceFitParams): number {
     let score = 12.5; // Base score
 
+    const audLower = params.targetAudience.toLowerCase();
+
     // Professional/B2B channels
     if (params.channel === "linkedin") {
-      if (params.contentGoals.includes("conversion") || params.contentGoals.includes("brand")) {
+      if (arrayIncludes(params.contentGoals, "conversion") || arrayIncludes(params.contentGoals, "brand")) {
         score += 5;
       }
-      if (params.targetAudience.toLowerCase().includes("professional") || 
-          params.targetAudience.toLowerCase().includes("b2b") ||
-          params.targetAudience.toLowerCase().includes("business")) {
+      if (stringIncludes(audLower, "professional") || 
+          stringIncludes(audLower, "b2b") ||
+          stringIncludes(audLower, "business")) {
         score += 7.5;
       }
     }
 
     // Visual channels
     if (params.channel === "instagram" || params.channel === "tiktok") {
-      if (params.contentGoals.includes("engagement") || params.contentGoals.includes("awareness")) {
+      if (arrayIncludes(params.contentGoals, "engagement") || arrayIncludes(params.contentGoals, "awareness")) {
         score += 5;
       }
-      if (params.targetAudience.toLowerCase().includes("young") ||
-          params.targetAudience.toLowerCase().includes("gen z") ||
-          params.targetAudience.toLowerCase().includes("millennial")) {
+      if (stringIncludes(audLower, "young") ||
+          stringIncludes(audLower, "gen z") ||
+          stringIncludes(audLower, "millennial")) {
         score += 7.5;
       }
     }
 
     // Community-focused
-    if (params.contentGoals.includes("community")) {
+    if (arrayIncludes(params.contentGoals, "community")) {
       if (params.channel === "reddit" || params.channel === "x" || params.channel === "facebook") {
         score += 7.5;
       }
     }
 
     // Traffic goals
-    if (params.contentGoals.includes("traffic")) {
+    if (arrayIncludes(params.contentGoals, "traffic")) {
       if (params.channel === "x" || params.channel === "reddit" || params.channel === "blog") {
         score += 5;
       }
@@ -263,15 +277,17 @@ export class PerformancePredictorService {
       const isWeekend = params.dayOfWeek === 0 || params.dayOfWeek === 6;
       const optimalHours = isWeekend ? timing.weekends : timing.weekdays;
 
-      if (optimalHours.includes(params.hourOfDay)) {
+      if (arrayIncludes(optimalHours, params.hourOfDay)) {
         score += 10;
       } else {
         // Penalize far from optimal
-        const distance = optimalHours.reduce((min, hour) => {
+        let minDistance = 24;
+        for (const hour of optimalHours) {
           const diff = Math.abs(hour - params.hourOfDay!);
-          return Math.min(min, diff, 24 - diff);
-        }, 24);
-        score -= Math.min(8, distance);
+          const dist = Math.min(diff, 24 - diff);
+          if (dist < minDistance) minDistance = dist;
+        }
+        score -= Math.min(8, minDistance);
       }
     }
 
@@ -285,7 +301,7 @@ export class PerformancePredictorService {
       const isWeekend = dayOfWeek === 0 || dayOfWeek === 6;
       const optimalHours = isWeekend ? timing.weekends : timing.weekdays;
 
-      if (optimalHours.includes(hourOfDay)) {
+      if (arrayIncludes(optimalHours, hourOfDay)) {
         score += 5;
       }
     }
