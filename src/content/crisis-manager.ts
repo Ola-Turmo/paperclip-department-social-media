@@ -3,7 +3,7 @@
  * Handles crisis detection, playbooks, and automated responses
  */
 
-import { SocialChannel } from '../types';
+import type { SocialChannel } from "../types.js";
 
 // ============================================
 // Type Definitions

@@ -1,6 +1,7 @@
 import { definePlugin, runWorker } from "@paperclipai/plugin-sdk";
 import { ContentPlanningService } from "./content-planning-service.js";
 import { PerformanceAnalysisService } from "./performance-analysis-service.js";
+import SocialDashboardService from "./ui/social-dashboard-service.js";
 import {
   createInitialConnectorHealthState,
   updateConnectorHealthState,
@@ -27,6 +28,10 @@ import type {
 // Initialize services
 const contentPlanningService = new ContentPlanningService();
 const performanceAnalysisService = new PerformanceAnalysisService();
+const socialDashboardService = new SocialDashboardService(
+  contentPlanningService,
+  performanceAnalysisService,
+);
 
 // Connector health state (XAF-007)
 let connectorHealthState: ConnectorHealthState[] = createInitialConnectorHealthState();
@@ -74,6 +79,23 @@ const plugin = definePlugin({
         hasLimitations: limitations.length > 0,
       };
       return summary;
+    });
+
+    ctx.data.register("dashboard.overview", async () => {
+      const dashboard = await socialDashboardService.getDashboardOverview();
+      const limitations = generateToolkitLimitations(connectorHealthState);
+      const connectorSummary: ConnectorHealthSummary = {
+        overallStatus: computeDepartmentHealthStatus(connectorHealthState),
+        checkedAt: new Date().toISOString(),
+        connectors: connectorHealthState,
+        limitations,
+        hasLimitations: limitations.length > 0,
+      };
+
+      return {
+        dashboard,
+        connectorSummary,
+      };
     });
 
     // ============================================
