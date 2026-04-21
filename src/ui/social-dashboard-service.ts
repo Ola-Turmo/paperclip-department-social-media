@@ -194,19 +194,10 @@ export class SocialDashboardService {
    * Get top 5 trends by velocity, mark breaking if velocity > 80
    */
   getTrendsForDashboard(): DashboardTrend[] {
-    try {
-      const trends = this.trendDetector.detectTrends({ limit: 5 });
-
-      return trends.map((trend) => ({
-        id: trend.id,
-        tag: trend.tag,
-        velocity: trend.velocity,
-        sentiment: trend.sentiment,
-        isBreaking: trend.velocity > 80,
-      }));
-    } catch {
-      return [];
-    }
+    // Keep the dashboard honest until a real trend-ingestion source is wired.
+    // The current detector can synthesize sample-like outputs, which should not
+    // surface in the live command center.
+    return [];
   }
 
   /**
@@ -331,12 +322,7 @@ export class SocialDashboardService {
       }
 
       // Calculate sentiment from trends
-      const trends = this.trendDetector.detectTrends({ limit: 10 });
-      let sentiment = 0.5;
-      if (trends.length > 0) {
-        const totalSentiment = trends.reduce((sum, t) => sum + t.sentiment, 0);
-        sentiment = Math.round((totalSentiment / trends.length) * 100) / 100;
-      }
+      const sentiment = 0;
 
       return {
         totalBriefs,
@@ -355,7 +341,7 @@ export class SocialDashboardService {
         pendingReview: 0,
         avgEngagement: 0,
         topPerformingChannel: "N/A",
-        sentiment: 0.5,
+        sentiment: 0,
       };
     }
   }
